@@ -1,0 +1,58 @@
+// Variables and mixins
+@import "scss/variables";
+@import "scss/mixins";
+/*! Spectre.css v#{$version} | MIT License | github.com/picturepan2/spectre */
+// Reset and dependencies
+
+
+@import "scss/normalize";
+@import "scss/base";
+// Layout
+@import "scss/layout";
+@import "scss/navbar";
+// Utility classes
+@import "scss/animations";
+@import "scss/utilities";
+// Elements
+@import "scss/forms";
+@import "scss/buttons";
+@import "scss/bars";
+
+@import "scss/tabs";
+
+* {
+    position: relative;
+}
+
+ul,
+li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.form-label.form-inline {
+    vertical-align: middle;
+}
+
+.form-label.form-inline .form-input {
+    display: inline-block;
+    width: auto;
+}
+
+.has-icon-left .form-icon.mdi,
+.has-icon-right .form-icon.mdi {
+    height: auto;
+}
+
+.orange {
+    color: $orange;
+}
+
+.golden {
+    color: $golden;
+}
+
+.flex {
+    display: flex;
+}

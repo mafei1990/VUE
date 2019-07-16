@@ -1,0 +1,331 @@
+// import router from "@/router";
+// import {
+//   resolve
+// } from "url";
+import store from "@/store";
+import xget from "@/utils/xget.js";
+const host =
+  process.env.NODE_ENV == "development" ? "/vapi" : "https://m.zjgt.com/ashx/";
+
+const api = {
+  //获取首页banner图片列表
+  getSlider: function () {
+    let query = {
+      url: host + "/WebStation.ashx",
+      param: {
+        body: {
+          cmdtype: "getbanner"
+        }
+      }
+    }
+    return xget(query).then(d => {
+      let data = [];
+      d.result.forEach((el, i) => {
+        data[i] = {
+          id: el.Id,
+          url: el.ImgPath,
+          link: el.ImgUrl,
+          text: null
+        };
+      });
+      return data;
+    });
+  },
+  //获取首页产品列表
+  getIdxPrd: function () {
+    let query = {
+      url: host + "/UserInvest.ashx",
+      param: {
+        body: {
+          cmdtype: "getprojectlist",
+          pagesize: 10,
+          curpage: 1,
+          type: 1
+        }
+      }
+    };
+    return xget(query).then(d => {
+      let data = [];
+      d.result.forEach((el, i) => {
+        data[i] = {
+          id: el.proId,
+          title: el.borrowTitle,
+          incomeRate: el.rate,
+          progress: el.inRate,
+          term: el.term,
+          termType: el.termType == "月" ? "个月" : el.termType,
+          total: el.total,
+          interestType: (function () {
+            switch (el.xmType) {
+              case "0":
+                return ["定期", "满标后计息"];
+              case "1":
+                return ["活期", ""];
+              case "3":
+                return ["定期", "投资后<em>次日计息</em>"];
+              default:
+                return "nothing";
+            }
+          })()
+        };
+      });
+      return data;
+    });
+  },
+  // 获取站点运营信息
+  getSiteInfo: function () {
+    let query = {
+      url: host + "/User.ashx",
+      param: {
+        body: {
+          cmdtype: "getlenddetail"
+        }
+      }
+    };
+    return xget(query).then(d => {
+      let org = d.result[0];
+      let data = {
+        continuedDays: org.ContinuedDays,
+        lendCount: org.LendCount,
+        totalIncome: org.SumExpectMoney,
+        totalTransaction: org.SumLendMoney
+      };
+      return data;
+    });
+  },
+  // 登陆
+  login: async function (ac, pw) {
+    let query = {
+      url: host + "/User.ashx",
+      param: {
+        body: {
+          cmdtype: "login",
+          account: ac,
+          password: pw
+        }
+      }
+    }
+    const d = await xget(query);
+    store.commit("loginState/logIn", d.result.username);
+    // if (rdUrl) {
+    //   router.replace({
+    //     path: rdUrl
+    //   });
+    // } else {
+    //   router.replace({
+    //     path: "/"
+    //   });
+    // }
+    Promise.resolve();
+  },
+  // 注销
+  logout: function () {
+    let query = {
+      url: host + "/User.ashx",
+      param: {
+        body: {
+          cmdtype: "singout"
+        }
+      }
+    }
+    xget(query).then(d => {
+      console.log(d);
+      store.commit("loginState/logOut");
+      location.reload();
+    });
+  },
+  // 检测登陆状态
+  isLogin: function () {
+    let query = {
+      url: host + "/User.ashx",
+      param: {
+        body: {
+          cmdtype: "ssouserlogin"
+        }
+      }
+    }
+    return xget(query)
+      .then(d => {
+        return Promise.resolve(d);
+      })
+      .catch(d => {
+        // router.replace({
+        //   name: "login",
+        //   params: {
+        //     redirectUrl: router.currentRoute.fullPath
+        //   }
+        // });
+        return Promise.reject(d);
+      });
+  },
+  // 个人账户信息
+  myaccount: function () {
+    let query = {
+      url: host + "/User.ashx",
+      param: {
+        body: {
+          cmdtype: "myaccount"
+        }
+      }
+    }
+    let data = () => {
+      let data;
+      try {
+        data = xget(query).then(d => {
+          // store.commit("userInfo/setInfo", d.result[0]);
+          return d.result[0];
+        });
+      } catch {
+        data = {};
+      }
+      return data;
+    };
+    return data();
+    // return this.isLogin().then(() => {
+    //   return xget(url, param).then(d => {
+    //     let data;
+    //     d = d.result[0]
+    //     data = d
+    //     return data;
+    //   })
+    // })
+  },
+  investlog: function ({
+    cur = 1,
+    size = 5,
+    st = 0
+  } = {}) {
+    let query = {
+      url: host + "/UserInvest.ashx",
+      param: {
+        body: {
+          cmdtype: "getinvestlog",
+          projectstatus: st,
+          pagesize: size,
+          curpage: cur
+        }
+      }
+    }
+    let data = xget(query)
+      .then(d => {
+        return d.result;
+      })
+      .catch(() => {
+        return [];
+      });
+
+    return data;
+  },
+  getCoinLog: function () {
+    let query = {
+      url: host + "/User.ashx",
+      param: {
+        body: {
+          cmdtype: "getgoldcoinlog",
+          pagesize: 20,
+          curpage: 1
+        }
+      }
+    }
+    let data = xget(query)
+      .then(d => {
+        let obj = {
+          number: d.result.zjbnumber,
+          list: JSON.parse(d.result.data)
+        };
+        return obj;
+      })
+      .catch(() => {
+        return {};
+      });
+    return data;
+  },
+  getRedpacket: function ({
+    state = 0
+  } = {}) {
+    let query = {
+      url: host + "/UserInvest.ashx",
+      param: {
+        body: {
+          cmdtype: "getredpacket",
+          rpState: state,
+          pagesize: 20,
+          curpage: 1
+        }
+      }
+    }
+    let data = xget(query)
+      .then(d => {
+        return JSON.parse(d.result[0].dataList);
+      })
+      .catch(() => {
+        return {};
+      });
+    return data;
+  },
+  getJxq: function ({
+    cur = 1,
+    size = 5,
+    st = 0
+  } = {}) {
+    let query = {
+      url: host + "/UserInvest.ashx",
+      param: {
+        body: {
+          cmdtype: "getuserjxq",
+          rateStatus: st,
+          rateType: "",
+          pagesize: size,
+          curpage: cur
+        }
+      }
+    }
+    let data = xget(query).then(d => d.result);
+    return data;
+  },
+  test: function () {
+    console.log("test done");
+  }
+};
+
+//fetch function 传入URL及参数获取数据
+// const xget = function (url, param) {
+//   param.method = !param.method ? "post" : param.method;
+//   return fetch(url, param)
+//     .then(res => {
+//       if (res.ok) {
+//         return res.json();
+//       }
+//     })
+//     .then(json => {
+//       if (json.status == "0") {
+//         return json;
+//       } else {
+//         let msg = json.message ? json.message : "unknown error";
+//         throw msg;
+//       }
+//     })
+//     .catch(err => {
+//       let ary = [];
+//       param.body.forEach((v, k) => {
+//         ary.push(`${k}:${v}`);
+//       });
+//       console.error(
+//         "Error:",
+//         `${err}
+//         ${url}
+//         ${ary}`
+//       );
+//       throw err;
+//     });
+// };
+
+// const objToParam = function (obj) {
+//   let param = "";
+//   for (let key in obj) {
+//     param = param + key + "=" + obj[key] + "&";
+//   }
+//   return param;
+// };
+
+export default api;

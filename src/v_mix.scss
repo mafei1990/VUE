@@ -1,0 +1,28 @@
+@mixin shadow($lv, $type:null) {
+    box-shadow: $lv + px $lv + px $lv * 3 + px $lv/3 + px rgba(0, 0, 0, 0.1) $type, $lv * 1.5 + px $lv * 1.5 + px $lv * 3+3 + px $lv/2 + px rgba(0, 0, 0, 0.12) $type;
+}
+
+@mixin drop-shadow($lv) {
+    filter: drop-shadow($lv * 1.5+px $lv * 1.5+px $lv*1.5+px rgba(0, 0, 0, 0.12));
+}
+
+// $golden: #c89a49;
+$golden:#C99833;
+$golden:#CAAD5F;
+$orange: #f60;
+$body-bg:#f3f3f3;
+$dark-color: #333333;
+$body-font-color: rgba(#000, 0.87);
+// @font-face {
+//     font-family: iconfont;
+//     src: url(/media/fonts/iconfont.eot?6229a865);
+//     src: url(/media/fonts/iconfont.eot?6229a865?#iefix) format("embedded-opentype"), url(/media/fonts/iconfont.woff?0d2ddc77) format("woff"), url(/media/fonts/iconfont.ttf?5cb2df90) format("truetype"), url(/media/fonts/iconfont.svg?fcf4c573#iconfont) format("svg")
+// }
+// .iconfont {
+//     font-family: iconfont !important;
+//     font-size: 1em;
+//     font-style: normal;
+//     -webkit-font-smoothing: antialiased;
+//     -webkit-text-stroke-width: .2px;
+//     -moz-osx-font-smoothing: grayscale
+// }
